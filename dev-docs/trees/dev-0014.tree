@@ -1,0 +1,21 @@
+\title{Leptos Components}
+
+\ul{
+
+  \li{
+    Components are the basic unit of composition and design in Leptos.
+  }
+
+  \li{
+    Similar to HTML elements.
+
+    \ul{
+
+      \li{Represent a section of the DOM}
+
+      \li{Self-contained, defined behavior}
+
+    }
+
+  }
+}

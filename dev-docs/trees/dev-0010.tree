@@ -1,0 +1,9 @@
+\title{Rust Backend and Rust Frontend}
+
+\p{The approach that was considered here was to use the following technologies:} 
+
+\ul{
+  \li{[Leptos](dev-0013) - }
+}
+
+\transclude{dev-0013}
