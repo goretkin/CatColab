@@ -798,7 +798,7 @@ mod tests {
 
     #[test]
     fn monic_constraint() {
-        /// The number of endomonomorphisms of a set |N| is N!.
+        // The number of endomonomorphisms of a set |N| is N!.
         let theory = Arc::new(th_signed_category());
         let mut model = UstrDiscreteDblModel::new(theory.clone());
         let (q, x, y, z) = (ustr("Q"), ustr("X"), ustr("Y"), ustr("Z"));
@@ -816,7 +816,7 @@ mod tests {
             4 * 3 * 2
         );
 
-        // Hom from noncommuting triangle into a pair of triangles, only one one  
+        // Hom from noncommuting triangle into a pair of triangles, only one one
         // of which commutes. There is only one morphism that is faithful.
         let (f, g, h, i, j) = (ustr("f"), ustr("g"), ustr("h"), ustr("i"), ustr("j"));
         let mut freetri = UstrDiscreteDblModel::new(theory.clone());
