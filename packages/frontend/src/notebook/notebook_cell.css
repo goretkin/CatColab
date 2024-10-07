@@ -27,3 +27,8 @@
     height: auto;
     max-width: 100%;
 }
+
+.selected-cell {
+    background-color: rgba(0, 123, 255, 0.2); /* Light blue background */
+    border: 1px solid #007bff; /* Blue border */
+}

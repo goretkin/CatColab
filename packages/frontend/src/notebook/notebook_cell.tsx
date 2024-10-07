@@ -50,6 +50,9 @@ export type CellActions = {
 
     // The cell has received focus.
     hasFocused: () => void;
+
+    // The cell has been selected.
+    select: () => void;
 };
 
 const cellDragDataKey = Symbol("notebook-cell");
@@ -84,6 +87,7 @@ export function NotebookCell(props: {
     actions: CellActions;
     children: JSX.Element;
     tag?: string;
+    appearsSelected: boolean;
 }) {
     let rootRef!: HTMLDivElement;
     let handleRef!: HTMLButtonElement;
@@ -96,6 +100,12 @@ export function NotebookCell(props: {
     const [isMenuOpen, setMenuOpen] = createSignal(false);
     const openMenu = () => setMenuOpen(true);
     const closeMenu = () => setMenuOpen(false);
+
+    const onMenuIconButtonClick = () => {
+        // TODO: document why the menu does not open if you swap `openMenu` and `select`.
+        props.actions.select();
+        openMenu();
+    };
 
     const completions = (): Completion[] => [
         {
@@ -131,7 +141,16 @@ export function NotebookCell(props: {
     });
 
     return (
-        <div class="cell" onMouseEnter={showGutter} onMouseLeave={hideGutter} ref={rootRef}>
+        <div
+            class={[
+                "cell",
+                ...(props.appearsSelected ? ["selected-cell"] : []),
+            ].join(" ")
+            }
+            onMouseEnter={showGutter}
+            onMouseLeave={hideGutter}
+            ref={rootRef}
+        >
             <div class="cell-gutter">
                 <IconButton
                     onClick={props.actions.createBelow}
@@ -151,7 +170,7 @@ export function NotebookCell(props: {
                 >
                     <Popover.Anchor as="span">
                         <IconButton
-                            onClick={openMenu}
+                            onClick={onMenuIconButtonClick}
                             style={{ visibility: visibility(isGutterVisible() || isMenuOpen()) }}
                             tooltip="Drag to move cell or click to open menu"
                             ref={handleRef}

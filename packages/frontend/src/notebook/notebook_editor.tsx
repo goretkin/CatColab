@@ -25,7 +25,7 @@ import {
     StemCellEditor,
     isCellDragData,
 } from "./notebook_cell";
-import { type Cell, type FormalCell, type Notebook, newRichTextCell, newStemCell } from "./types";
+import { type Cell, CellId, type FormalCell, type Notebook, newRichTextCell, newStemCell } from "./types";
 
 import "./notebook_editor.css";
 
@@ -70,9 +70,44 @@ export function NotebookEditor<T>(props: {
     // FIXME: Remove this option once we fix focus management.
     noShortcuts?: boolean;
 }) {
-    const [activeCell, setActiveCell] = createSignal(props.notebook.cells.length > 0 ? 0 : -1);
 
-    // Set up commands and their keyboard shortcuts.
+    type CellsState = {
+        activeCell: number;
+        // A selection is determined by a set of cell ids, rather than a set of indices into `notebook.cells`.
+        // This means that a selection remains valid even when cells are added or moved around.
+        selectedCells: Set<CellId>;
+    };
+
+    const [cellsState, setCellsState] = createSignal<CellsState>({
+        activeCell: props.notebook.cells.length > 0 ? 0 : -1,
+        selectedCells: new Set(),
+    });
+
+    const activeCell = () => cellsState().activeCell;
+    const selectedCells = () => cellsState().selectedCells;
+
+    // When `activeCell` changes, `selectedCells` is cleared.
+    const setActiveCell = (i: number) => {
+        setCellsState((prev) => ({
+            ...prev,
+            activeCell: i,
+            selectedCells: new Set()
+        }));
+    };
+    // TODO determine how `activeCell` should be updated when the selection is updated.
+    // For now, we don't update `activeCell` when the selection changes.
+    const setSelectedCells = (s: Set<CellId>) => setCellsState((prev) => ({
+        ...prev,
+        selectedCells: s
+    }));
+
+    // There is one use of semantically setting active cell that we are handling separately so as not to clear the selection.
+    const setActiveCellViaFocus = (i: number) => {
+        setCellsState((prev) => ({
+            ...prev,
+            activeCell: i,
+        }));
+    };
 
     const addAfterActiveCell = (cell: Cell<T>) => {
         props.changeNotebook((nb) => {
@@ -201,6 +236,7 @@ export function NotebookEditor<T>(props: {
                 <For each={props.notebook.cells}>
                     {(cell, i) => {
                         const isActive = () => activeCell() === i();
+                        const isSelected = () => selectedCells().has(cell.id);
                         const cellActions: CellActions = {
                             activateAbove: () => {
                                 i() > 0 && setActiveCell(i() - 1);
@@ -230,8 +266,11 @@ export function NotebookEditor<T>(props: {
                                     setActiveCell(i());
                                 }),
                             hasFocused: () => {
-                                setActiveCell(i());
+                                setActiveCellViaFocus(i());
                             },
+                            select: () => {
+                                setSelectedCells(new Set([cell.id]));
+                            }
                         };
 
                         return (
@@ -244,6 +283,7 @@ export function NotebookEditor<T>(props: {
                                             ? props.cellLabel?.(cell.content)
                                             : undefined
                                     }
+                                    appearsSelected={isSelected()}
                                 >
                                     <Switch>
                                         <Match when={cell.tag === "rich-text"}>
