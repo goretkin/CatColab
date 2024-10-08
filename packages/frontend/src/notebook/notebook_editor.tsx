@@ -96,10 +96,22 @@ export function NotebookEditor<T>(props: {
     };
     // TODO determine how `activeCell` should be updated when the selection is updated.
     // For now, we don't update `activeCell` when the selection changes.
-    const setSelectedCells = (s: Set<CellId>) => setCellsState((prev) => ({
-        ...prev,
-        selectedCells: s
-    }));
+    const setSelectedCells = (s: Set<CellId>) => {
+        setCellsState((prev) => ({
+            ...prev,
+            selectedCells: s
+        }));
+
+        if (s.size !== 0) {
+
+            console.log("clearing text selection");
+            // Clear text selection
+            const selection = document.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+            }
+        }
+    };
 
     // There is one use of semantically setting active cell that we are handling separately so as not to clear the selection.
     const setActiveCellViaFocus = (i: number) => {
@@ -220,6 +232,27 @@ export function NotebookEditor<T>(props: {
             },
         });
         onCleanup(cleanup);
+    });
+
+    // Hook into the web selection API
+    createEffect(() => {
+        const handleSelectionChange = () => {
+            const selection = document.getSelection();
+            if (selection) {
+                console.log(`selectionchange ${selection.type}`);
+            }
+            if (selection && selection.type === "Range" && selectedCells().size > 0) {
+                console.log("clear cells due to text selection");
+                // Text is selected, clear cell selection
+                setSelectedCells(new Set());
+            }
+        };
+
+        document.addEventListener("selectionchange", handleSelectionChange);
+
+        onCleanup(() => {
+            document.removeEventListener("selectionchange", handleSelectionChange);
+        });
     });
 
     return (
