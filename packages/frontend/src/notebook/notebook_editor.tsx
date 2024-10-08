@@ -71,6 +71,9 @@ export function NotebookEditor<T>(props: {
     noShortcuts?: boolean;
 }) {
 
+    // For debugging only
+    (window as any).notebookEditorInstance = props.notebook;
+
     type CellsState = {
         activeCell: number;
         // A selection is determined by a set of cell ids, rather than a set of indices into `notebook.cells`.
