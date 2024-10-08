@@ -88,6 +88,7 @@ export function NotebookCell(props: {
     children: JSX.Element;
     tag?: string;
     appearsSelected: boolean;
+    onClickCellContent?: (e: MouseEvent) => void;
 }) {
     let rootRef!: HTMLDivElement;
     let handleRef!: HTMLButtonElement;
@@ -185,7 +186,7 @@ export function NotebookCell(props: {
                     </Popover.Portal>
                 </Popover>
             </div>
-            <div class="cell-content">{props.children}</div>
+            <div class="cell-content" onClick={props.onClickCellContent}>{props.children}</div>
             <Show when={props.tag}>
                 <div class="cell-tag">{props.tag}</div>
             </Show>

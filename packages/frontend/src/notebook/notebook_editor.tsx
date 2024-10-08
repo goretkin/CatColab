@@ -96,7 +96,8 @@ export function NotebookEditor<T>(props: {
     };
     // TODO determine how `activeCell` should be updated when the selection is updated.
     // For now, we don't update `activeCell` when the selection changes.
-    const setSelectedCells = (s: Set<CellId>) => {
+    const setSelectedCells = (update: Set<CellId> | ((prev: Set<CellId>) => Set<CellId>)) => {
+        const s = typeof update === "function" ? update(selectedCells()) : update;
         setCellsState((prev) => ({
             ...prev,
             selectedCells: s
@@ -119,6 +120,26 @@ export function NotebookEditor<T>(props: {
             ...prev,
             activeCell: i,
         }));
+    };
+
+    const toggleCellSelection = (cellId: CellId) => {
+        setSelectedCells((prev: Set<CellId>) => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(cellId)) {
+                newSelection.delete(cellId);
+            } else {
+                newSelection.add(cellId);
+            }
+            return newSelection;
+        });
+    };
+
+    const handleCellContentClick = (index: number, cellId: CellId, event: MouseEvent) => {
+        console.log("handleCellContentClick got called: ", index);
+        if (event.ctrlKey) {
+            toggleCellSelection(cellId);
+            return
+        }
     };
 
     const addAfterActiveCell = (cell: Cell<T>) => {
@@ -317,6 +338,7 @@ export function NotebookEditor<T>(props: {
                                             : undefined
                                     }
                                     appearsSelected={isSelected()}
+                                    onClickCellContent={(e: MouseEvent) => handleCellContentClick(i(), cell.id, e)}
                                 >
                                     <Switch>
                                         <Match when={cell.tag === "rich-text"}>
